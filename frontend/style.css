@@ -1,0 +1,193 @@
+
+.bar .fill .bubble {
+  position: absolute;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 50%;
+  animation: bubble 2.5s infinite ease-in-out;
+}
+.bar .fill .bubble:nth-child(1) { left: 15%; animation-delay: 0s; }
+.bar .fill .bubble:nth-child(2) { left: 40%; animation-delay: 0.7s; }
+.bar .fill .bubble:nth-child(3) { left: 70%; animation-delay: 1.3s; }
+.bar .fill .bubble:nth-child(4) { left: 55%; animation-delay: 1.8s; }
+.bar .fill .bubble:nth-child(5) { left: 30%; animation-delay: 2.2s; }
+
+@keyframes bubble {
+  0% { transform: translateY(0) scale(1); opacity: 0.7; }
+  50% { transform: translateY(-40px) scale(1.2); opacity: 1; }
+  100% { transform: translateY(-80px) scale(0.8); opacity: 0; }
+}
+.bar .fill .bubble {
+  /* ...existing bubble styles... */
+  animation-duration: 4s;
+}
+
+.bar .fill .reflection {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 100%);
+  border-radius: 0 0 16px 16px;
+  pointer-events: none;
+}
+.slider-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.slider-row label {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  text-align: center;
+  background: linear-gradient(160deg, #0d1b2a 0%, #1b263b 35%, #415a77 65%, #e0d9b5 100%);
+  color: #f5f5f5;
+  min-height: 100vh;
+  margin: 0;
+}
+
+
+ .bars {
+  display: flex;
+  justify-content: center;
+  gap: 70px;
+  margin-top: 60px;
+  margin-bottom: 30px;
+}
+  
+
+/* Bar column for label alignment */
+ .bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+  
+
+.bar {
+  width: 140px;
+  height: 300px;
+  background: rgba(240, 244, 247, 0.8);
+  position: relative;
+  border-radius: 20px 20px 16px 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  overflow: hidden;
+  margin-bottom: 10px;
+  transition: box-shadow 0.3s;
+}
+.bar:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+}
+
+ .bar span {
+  position: absolute;
+  bottom: -34px;
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.15em;
+  color: #f3f4f6;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+  
+
+
+.bar .fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  transition: height 0.5s;
+  border-radius: 0 0 16px 16px;
+  background: linear-gradient(180deg, #b3e5fc 0%, #0288d1 100%);
+  box-shadow: 0 2px 8px rgba(33,150,243,0.15);
+  overflow: hidden;
+}
+
+.story-area {
+  max-width: 800px;
+  margin: 40px auto 30px;
+  padding: 24px 30px;
+  background: rgba(12, 32, 52, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
+  text-align: left;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.story-area.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#story-heading {
+  margin: 0 0 10px;
+  font-size: 1.5em;
+  color: #fefae0;
+  letter-spacing: 0.5px;
+}
+
+#story-body {
+  margin: 0;
+  font-size: 1.06em;
+  line-height: 1.55;
+  color: #f1f5f9;
+}
+
+ .sliders {
+  margin: 60px auto 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+
+
+ .slider-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  padding: 12px 18px;
+  min-width: 120px;
+}
+  .slider-row label {
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #f2f4f8;
+    font-size: 1em;
+    letter-spacing: 1px;
+  }
+  .slider-row input[type="range"] {
+    width: 160px;
+    margin: 0 10px;
+    accent-color: #0288d1;
+    height: 6px;
+    border-radius: 6px;
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.35);
+  }
+  #food input[type="range"] { accent-color: #fff; }
+  #ai input[type="range"] { accent-color: #1976d2; }
+  #crops input[type="range"] { accent-color: #ffd600; }
+  #animals input[type="range"] { accent-color: #222; }
+

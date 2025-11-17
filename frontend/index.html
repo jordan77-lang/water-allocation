@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Water Allocation Simulation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Water Allocation Choices</h1>
+  <div class="bars">
+    <div class="bar-col">
+      <div class="bar" id="food"><span>Food</span></div>
+      <label for="slider-food">Food</label>
+    </div>
+    <div class="bar-col">
+      <div class="bar" id="ai"><span>AI</span></div>
+      <label for="slider-ai">AI</label>
+    </div>
+    <div class="bar-col">
+      <div class="bar" id="crops"><span>Crops</span></div>
+      <label for="slider-crops">Crops</label>
+    </div>
+    <div class="bar-col">
+      <div class="bar" id="animals"><span>Animals</span></div>
+      <label for="slider-animals">Animals</label>
+    </div>
+  </div>
+
+  <div class="story-area visible" id="story-area">
+    <h2 id="story-heading">Awaiting your first offering of water...</h2>
+    <p id="story-body">Each bucket reflects a choice Diné communities face every season. Add water to begin the story.</p>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-row">
+      <label for="slider-food">Food</label><br>
+      <input type="range" min="0" max="1000" value="0" id="slider-food">
+    </div>
+    <div class="slider-row">
+      <label for="slider-ai">AI</label><br>
+      <input type="range" min="0" max="1000" value="0" id="slider-ai">
+    </div>
+    <div class="slider-row">
+      <label for="slider-crops">Crops</label><br>
+      <input type="range" min="0" max="1000" value="0" id="slider-crops">
+    </div>
+    <div class="slider-row">
+      <label for="slider-animals">Animals</label><br>
+      <input type="range" min="0" max="1000" value="0" id="slider-animals">
+    </div>
+    <div><small>Use sliders to test bar heights (simulates scale readings)</small></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
