@@ -6,10 +6,16 @@ const sounds = {
   animals: new Audio("../sounds/animals.mp3")
 };
 
-const SOUND_THRESHOLD = 25; // ignore minor fluctuations
-const STORY_DURATION = 6000;
+// === Water animation tuning ===
+const SOUND_THRESHOLD = 5; // minimum water-point jump to count as a bag event; keep slightly below the light bag increment from the backend
+const STORY_DURATION = 6000; // ms that a story panel stays visible after a bag event
+const DECAY_RATE = 0.25; // amount of water to drain toward the actual total each decay step (0.0 – 1.0 range)
+const MIN_DECAY_STEP = 4; // smallest amount of water to remove each step so the drain animation stays visible
+const DECAY_INTERVAL_MS = 800; // how often the front-end water levels should decay (ms)
+const MAX_WATER_POINTS = 200; // keep in sync with the backend: raise if the scene should allow more stored water
 
 let lastValues = {food:0, ai:0, crops:0, animals:0};
+const displayValues = {food:0, ai:0, crops:0, animals:0};
 
 let testMode = false;
 const sliders = {
@@ -61,22 +67,44 @@ for (let key in sliders) {
   });
 }
 
-function updateBar(key, value) {
+function getFillElement(key) {
   const bar = document.getElementById(key);
+  if (!bar) {
+    return null;
+  }
   let fill = bar.querySelector('.fill');
   if (!fill) {
     fill = document.createElement('div');
     fill.className = 'fill';
     bar.appendChild(fill);
-    // Add 5 bubbles with random delays and positions
     for (let i = 0; i < 5; i++) {
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
       fill.appendChild(bubble);
     }
   }
-  const percent = Math.min(value / 1000 * 100, 100); // scale values
+  return fill;
+}
+
+function setFillHeight(key, fillElement) {
+  const fill = fillElement || getFillElement(key);
+  if (!fill) {
+    return;
+  }
+  const percent = Math.min((displayValues[key] / MAX_WATER_POINTS) * 100, 100);
   fill.style.height = percent + "%";
+}
+
+function updateBar(key, value) {
+  const fill = getFillElement(key);
+  if (!fill) {
+    return;
+  }
+
+  if (value > displayValues[key]) {
+    displayValues[key] = value;
+  }
+  setFillHeight(key, fill);
 
   const diff = value - (lastValues[key] || 0);
   if (diff >= SOUND_THRESHOLD) {
@@ -87,6 +115,19 @@ function updateBar(key, value) {
 
   lastValues[key] = value;
 }
+
+setInterval(() => {
+  for (const key of Object.keys(displayValues)) {
+    const target = lastValues[key] || 0;
+    const current = displayValues[key];
+    if (current > target) {
+      const diff = current - target;
+      const decayAmount = Math.max(diff * DECAY_RATE, MIN_DECAY_STEP);
+      displayValues[key] = Math.max(target, current - decayAmount);
+      setFillHeight(key);
+    }
+  }
+}, DECAY_INTERVAL_MS);
 
 function showStory(key) {
   const options = stories[key] || [];
@@ -120,7 +161,7 @@ async function fetchData() {
     }
     // Sync sliders to live data
     for (let key in sliders) {
-      sliders[key].value = data[key];
+      sliders[key].value = Math.min(MAX_WATER_POINTS, data[key]);
     }
   }
 }
