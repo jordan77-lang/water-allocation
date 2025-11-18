@@ -8,22 +8,25 @@ const sounds = {
 
 // === Water animation tuning ===
 const SOUND_THRESHOLD = 5; // minimum water-point jump to count as a bag event; keep slightly below the light bag increment from the backend
+const SMALL_BAG_POINTS = 10; // mirror LIGHT_BAG_INCREMENT in backend/server.py when you recalibrate
+const LARGE_BAG_POINTS = 25; // mirror HEAVY_BAG_INCREMENT in backend/server.py when you recalibrate
 const STORY_DURATION = 6000; // ms that a story panel stays visible after a bag event
-const DECAY_RATE = 0.25; // amount of water to drain toward the actual total each decay step (0.0 – 1.0 range)
-const MIN_DECAY_STEP = 4; // smallest amount of water to remove each step so the drain animation stays visible
-const DECAY_INTERVAL_MS = 800; // how often the front-end water levels should decay (ms)
+
+// === Decay controls ===
+// Raise DECAY_RATE (closer to 1.0) to make the bar fall faster; lower it for a slower drain.
+// Increase MIN_DECAY_STEP if small differences take too long to disappear.
+// DECAY_INTERVAL_MS is how often the decay loop runs; shorten for smoother animation, lengthen to reduce CPU work.
+// Remember to keep the backend DECAY_POINTS_PER_SECOND value in server.py in sync so the sensor-driven totals fall at a similar pace.
+const DECAY_RATE = 0.005; // amount of water to drain toward the actual total each decay step (0.0 – 1.0 range)
+const MIN_DECAY_STEP = 2; // smallest amount of water to remove each step so the drain animation stays visible
+const DECAY_INTERVAL_MS = 2000; // how often the front-end water levels should decay (ms)
 const MAX_WATER_POINTS = 200; // keep in sync with the backend: raise if the scene should allow more stored water
 
 let lastValues = {food:0, ai:0, crops:0, animals:0};
 const displayValues = {food:0, ai:0, crops:0, animals:0};
 
 let testMode = false;
-const sliders = {
-  food: document.getElementById('slider-food'),
-  ai: document.getElementById('slider-ai'),
-  crops: document.getElementById('slider-crops'),
-  animals: document.getElementById('slider-animals')
-};
+const bagButtons = document.querySelectorAll('.bag-button');
 
 const storyArea = document.getElementById('story-area');
 const storyHeading = document.getElementById('story-heading');
@@ -60,12 +63,20 @@ const stories = {
 const lastStoryIndex = {food:null, ai:null, crops:null, animals:null};
 let storyTimeout = null;
 
-for (let key in sliders) {
-  sliders[key].addEventListener('input', () => {
+bagButtons.forEach((button) => {
+  const bucket = button.dataset.bucket;
+  const size = button.dataset.size;
+  if (!bucket || !size) {
+    return;
+  }
+  button.addEventListener('click', () => {
     testMode = true;
-    updateBar(key, parseInt(sliders[key].value));
+    const increment = size === 'large' ? LARGE_BAG_POINTS : SMALL_BAG_POINTS;
+    const current = displayValues[bucket] || 0;
+    const nextValue = Math.min(MAX_WATER_POINTS, current + increment);
+    updateBar(bucket, nextValue, { targetValue: 0 });
   });
-}
+});
 
 function getFillElement(key) {
   const bar = document.getElementById(key);
@@ -95,7 +106,7 @@ function setFillHeight(key, fillElement) {
   fill.style.height = percent + "%";
 }
 
-function updateBar(key, value) {
+function updateBar(key, value, options = {}) {
   const fill = getFillElement(key);
   if (!fill) {
     return;
@@ -106,14 +117,18 @@ function updateBar(key, value) {
   }
   setFillHeight(key, fill);
 
-  const diff = value - (lastValues[key] || 0);
+  const previousTarget = lastValues[key] || 0;
+  const diff = value - previousTarget;
   if (diff >= SOUND_THRESHOLD) {
     sounds[key].currentTime = 0;
     sounds[key].play();
     showStory(key);
   }
 
-  lastValues[key] = value;
+  const newTarget = Object.prototype.hasOwnProperty.call(options, 'targetValue')
+    ? options.targetValue
+    : value;
+  lastValues[key] = Math.max(0, newTarget);
 }
 
 setInterval(() => {
@@ -158,10 +173,6 @@ async function fetchData() {
     const data = await response.json();
     for (let key in data) {
       updateBar(key, data[key]);
-    }
-    // Sync sliders to live data
-    for (let key in sliders) {
-      sliders[key].value = Math.min(MAX_WATER_POINTS, data[key]);
     }
   }
 }

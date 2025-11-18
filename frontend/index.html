@@ -10,19 +10,19 @@
   <div class="bars">
     <div class="bar-col">
       <div class="bar" id="food"><span>Food</span></div>
-      <label for="slider-food">Food</label>
+      <div class="bar-caption">Food</div>
     </div>
     <div class="bar-col">
       <div class="bar" id="ai"><span>AI</span></div>
-      <label for="slider-ai">AI</label>
+      <div class="bar-caption">AI</div>
     </div>
     <div class="bar-col">
       <div class="bar" id="crops"><span>Crops</span></div>
-      <label for="slider-crops">Crops</label>
+      <div class="bar-caption">Crops</div>
     </div>
     <div class="bar-col">
       <div class="bar" id="animals"><span>Animals</span></div>
-      <label for="slider-animals">Animals</label>
+      <div class="bar-caption">Animals</div>
     </div>
   </div>
 
@@ -31,24 +31,30 @@
     <p id="story-body">Each bucket reflects a choice Diné communities face every season. Add water to begin the story.</p>
   </div>
 
-  <div class="sliders">
-    <div class="slider-row">
-      <label for="slider-food">Food</label><br>
-      <input type="range" min="0" max="200" value="0" id="slider-food">
+  <div class="controls">
+    <div class="control-row" data-bucket="food">
+      <h3>Food</h3>
+      <button class="bag-button small" data-bucket="food" data-size="small">Small Bean Bag</button>
+      <button class="bag-button large" data-bucket="food" data-size="large">Large Bean Bag</button>
     </div>
-    <div class="slider-row">
-      <label for="slider-ai">AI</label><br>
-      <input type="range" min="0" max="200" value="0" id="slider-ai">
+    <div class="control-row" data-bucket="ai">
+      <h3>AI</h3>
+      <button class="bag-button small" data-bucket="ai" data-size="small">Small Bean Bag</button>
+      <button class="bag-button large" data-bucket="ai" data-size="large">Large Bean Bag</button>
     </div>
-    <div class="slider-row">
-      <label for="slider-crops">Crops</label><br>
-      <input type="range" min="0" max="200" value="0" id="slider-crops">
+    <div class="control-row" data-bucket="crops">
+      <h3>Crops</h3>
+      <button class="bag-button small" data-bucket="crops" data-size="small">Small Bean Bag</button>
+      <button class="bag-button large" data-bucket="crops" data-size="large">Large Bean Bag</button>
     </div>
-    <div class="slider-row">
-      <label for="slider-animals">Animals</label><br>
-      <input type="range" min="0" max="200" value="0" id="slider-animals">
+    <div class="control-row" data-bucket="animals">
+      <h3>Animals</h3>
+      <button class="bag-button small" data-bucket="animals" data-size="small">Small Bean Bag</button>
+      <button class="bag-button large" data-bucket="animals" data-size="large">Large Bean Bag</button>
     </div>
-    <div><small>Use sliders to test bar heights (simulates scale readings)</small></div>
+    <div class="controls-note">
+      <small>Use these buttons to simulate bean bags (page enters test mode until refresh).</small>
+    </div>
   </div>
   <script src="script.js"></script>
 </body>

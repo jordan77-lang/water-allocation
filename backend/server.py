@@ -35,7 +35,9 @@ HEAVY_BAG_INCREMENT = 25  # TODO: change to the number of “water points” a h
 
 # 3) Water decay. This controls how quickly the stored water drains even if no
 #    new bags are added. Increase for faster drain, decrease for a slower fade.
-DECAY_POINTS_PER_SECOND = 0.4  # TODO: tune until the on-screen drain feels right
+#    Keep this roughly aligned with the front-end constants in script.js so
+#    the live sensor readings fall at the same pace you see during slider tests.
+DECAY_POINTS_PER_SECOND = .005  # TODO: tune until the on-screen drain feels right
 
 
 @dataclass

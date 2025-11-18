@@ -34,17 +34,6 @@
   border-radius: 0 0 16px 16px;
   pointer-events: none;
 }
-.slider-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.slider-row label {
-  font-weight: bold;
-  margin-bottom: 4px;
-}
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
   text-align: center;
@@ -72,6 +61,14 @@ body {
   min-width: 120px;
 }
   
+  .bar-caption {
+    margin-top: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #f1f4f9;
+    text-transform: uppercase;
+  }
+
 
 .bar {
   width: 140px;
@@ -148,46 +145,72 @@ body {
   color: #f1f5f9;
 }
 
- .sliders {
+.controls {
   margin: 60px auto 50px;
   display: flex;
-  flex-direction: row;
   justify-content: center;
-  gap: 40px;
+  gap: 32px;
   flex-wrap: wrap;
+  max-width: 900px;
 }
 
-
-
- .slider-row {
+.control-row {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 10px;
   background: rgba(255,255,255,0.08);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-  padding: 12px 18px;
-  min-width: 120px;
+  padding: 16px 24px;
+  min-width: 150px;
+  backdrop-filter: blur(4px);
 }
-  .slider-row label {
-    font-weight: bold;
-    margin-bottom: 4px;
-    color: #f2f4f8;
-    font-size: 1em;
-    letter-spacing: 1px;
-  }
-  .slider-row input[type="range"] {
-    width: 160px;
-    margin: 0 10px;
-    accent-color: #0288d1;
-    height: 6px;
-    border-radius: 6px;
-  background: rgba(255,255,255,0.15);
-  box-shadow: 0 1px 6px rgba(0,0,0,0.35);
-  }
-  #food input[type="range"] { accent-color: #fff; }
-  #ai input[type="range"] { accent-color: #1976d2; }
-  #crops input[type="range"] { accent-color: #ffd600; }
-  #animals input[type="range"] { accent-color: #222; }
+
+.control-row h3 {
+  margin: 0 0 12px;
+  font-size: 1.1em;
+  letter-spacing: 1px;
+  color: #f2f4f8;
+  text-transform: uppercase;
+}
+
+.bag-button {
+  font-family: inherit;
+  font-size: 0.95em;
+  padding: 10px 18px;
+  margin: 4px 0;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #0d1b2a;
+  font-weight: 600;
+  width: 100%;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.bag-button.small {
+  background: linear-gradient(135deg, #b3e5fc 0%, #4fc3f7 100%);
+  box-shadow: 0 4px 12px rgba(79,195,247,0.35);
+}
+
+.bag-button.large {
+  background: linear-gradient(135deg, #ffd166 0%, #f4a259 100%);
+  box-shadow: 0 4px 12px rgba(244,162,89,0.35);
+}
+
+.bag-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.28);
+}
+
+.bag-button:active {
+  transform: translateY(0);
+}
+
+.controls-note {
+  flex-basis: 100%;
+  text-align: center;
+  margin-top: 20px;
+  color: rgba(241,245,249,0.8);
+}
 
