@@ -17,8 +17,8 @@ const STORY_DURATION = 6000; // ms that a story panel stays visible after a bag 
 // Increase MIN_DECAY_STEP if small differences take too long to disappear.
 // DECAY_INTERVAL_MS is how often the decay loop runs; shorten for smoother animation, lengthen to reduce CPU work.
 // Remember to keep the backend DECAY_POINTS_PER_SECOND value in server.py in sync so the sensor-driven totals fall at a similar pace.
-const DECAY_RATE = 0.005; // amount of water to drain toward the actual total each decay step (0.0 – 1.0 range)
-const MIN_DECAY_STEP = 2; // smallest amount of water to remove each step so the drain animation stays visible
+let DECAY_RATE = 0.0005; // amount of water to drain toward the actual total each decay step (0.0 – 1.0 range)
+let MIN_DECAY_STEP = 0.1; // smallest amount of water to remove each step so the drain animation stays visible
 const DECAY_INTERVAL_MS = 2000; // how often the front-end water levels should decay (ms)
 const MAX_WATER_POINTS = 200; // keep in sync with the backend: raise if the scene should allow more stored water
 
@@ -178,3 +178,22 @@ async function fetchData() {
 }
 
 setInterval(fetchData, 1000);
+
+async function syncDecaySettings() {
+  try {
+    const response = await fetch("http://localhost:5000/config");
+    if (!response.ok) {
+      return;
+    }
+    const config = await response.json();
+    const remoteDecay = Number(config.decay_per_sec);
+    if (!Number.isNaN(remoteDecay) && remoteDecay >= 0) {
+      DECAY_RATE = remoteDecay;
+      MIN_DECAY_STEP = Math.max(remoteDecay * MAX_WATER_POINTS * 0.05, 0);
+    }
+  } catch (error) {
+    console.warn("Falling back to default decay settings", error);
+  }
+}
+
+syncDecaySettings();

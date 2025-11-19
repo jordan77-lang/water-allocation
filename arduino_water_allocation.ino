@@ -1,54 +1,76 @@
 #include "HX711.h"
 
-// HX711 circuit wiring for four scales
-const int LOADCELL_DOUT_PIN_1 = 2;
-const int LOADCELL_SCK_PIN_1 = 3;
-const int LOADCELL_DOUT_PIN_2 = 4;
-const int LOADCELL_SCK_PIN_2 = 5;
-const int LOADCELL_DOUT_PIN_3 = 6;
-const int LOADCELL_SCK_PIN_3 = 7;
-const int LOADCELL_DOUT_PIN_4 = 8;
-const int LOADCELL_SCK_PIN_4 = 9;
+struct ScaleChannel {
+  HX711 scale;
+  const uint8_t doutPin;
+  const uint8_t sckPin;
+  float calibrationFactor;  // Counts-per-gram derived from a known weight; negative flips direction
+  long tareOffset;          // Saved offset from a prior tare; leave as 0 to tare automatically at boot
+};
 
-HX711 scale1;
-HX711 scale2;
-HX711 scale3;
-HX711 scale4;
+constexpr uint8_t NUM_CHANNELS = 4;
+constexpr uint8_t AVERAGE_SAMPLES = 5;           // Raise to smooth noisy load cells (slower response)
+constexpr unsigned long READ_INTERVAL_MS = 1000; // Lower for faster updates, raise if USB bandwidth is tight
+
+ScaleChannel channels[NUM_CHANNELS] = {
+  // Replace the placeholder calibration factors with the value produced by scale.get_units() / known_mass.
+  {HX711(), 2, 3, -7050.0f, 0},   // Food bucket
+  {HX711(), 4, 5, -7050.0f, 0},   // AI bucket
+  {HX711(), 6, 7, -7050.0f, 0},   // Crops bucket
+  {HX711(), 8, 9, -7050.0f, 0}    // Animals bucket
+};
+
+unsigned long lastReadMillis = 0;
+
+void applyCalibration(ScaleChannel &channel) {
+  channel.scale.begin(channel.doutPin, channel.sckPin);
+  channel.scale.set_scale(channel.calibrationFactor);
+
+  if (channel.tareOffset != 0) {
+    // Use a pre-recorded tare when you need consistent offsets between power cycles.
+    channel.scale.set_offset(channel.tareOffset);
+  } else {
+    // Let the load cell settle with empty buckets before capturing a fresh tare.
+    delay(200);
+    channel.scale.tare();
+  }
+}
+
+float readWeight(ScaleChannel &channel) {
+  if (!channel.scale.is_ready()) {
+    return NAN;
+  }
+  return channel.scale.get_units(AVERAGE_SAMPLES);
+}
 
 void setup() {
   Serial.begin(9600);
-  scale1.begin(LOADCELL_DOUT_PIN_1, LOADCELL_SCK_PIN_1);
-  scale2.begin(LOADCELL_DOUT_PIN_2, LOADCELL_SCK_PIN_2);
-  scale3.begin(LOADCELL_DOUT_PIN_3, LOADCELL_SCK_PIN_3);
-  scale4.begin(LOADCELL_DOUT_PIN_4, LOADCELL_SCK_PIN_4);
 
-  // Set calibration factors after determining them
-  // scale1.set_scale(calibration_factor_1);
-  // scale2.set_scale(calibration_factor_2);
-  // scale3.set_scale(calibration_factor_3);
-  // scale4.set_scale(calibration_factor_4);
+  for (uint8_t i = 0; i < NUM_CHANNELS; ++i) {
+    applyCalibration(channels[i]);
+  }
 
-  // Set offset (tare)
-  // scale1.tare();
-  // scale2.tare();
-  // scale3.tare();
-  // scale4.tare();
+  Serial.println("# Water allocation monitor ready (grams)");
 }
 
 void loop() {
-  long reading1 = scale1.is_ready() ? scale1.read() : 0;
-  long reading2 = scale2.is_ready() ? scale2.read() : 0;
-  long reading3 = scale3.is_ready() ? scale3.read() : 0;
-  long reading4 = scale4.is_ready() ? scale4.read() : 0;
+  const unsigned long now = millis();
+  if (now - lastReadMillis < READ_INTERVAL_MS) {
+    return;
+  }
+  lastReadMillis = now;
 
-  // Output as CSV: food,ai,crops,animals
-  Serial.print(reading1);
-  Serial.print(",");
-  Serial.print(reading2);
-  Serial.print(",");
-  Serial.print(reading3);
-  Serial.print(",");
-  Serial.println(reading4);
+  for (uint8_t i = 0; i < NUM_CHANNELS; ++i) {
+    float weight = readWeight(channels[i]);
+    if (isnan(weight)) {
+      weight = 0.0f;
+    }
 
-  delay(1000); // Read every second
+    if (i > 0) {
+      Serial.print(",");
+    }
+    Serial.print(weight, 2);
+  }
+
+  Serial.println();
 }

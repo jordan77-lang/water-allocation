@@ -1,0 +1,29 @@
+{
+  "name": "water-allocation",
+  "version": "1.0.0",
+  "description": "This interactive installation uses Arduino load cells to simulate water allocation choices.",
+  "main": "index.js",
+  "scripts": {
+    "backend": "dotenv -e .env -- ..\\\\.venv\\\\Scripts\\\\python.exe backend\\server.py",
+    "frontend": "cross-env-shell \"http-server frontend -a 127.0.0.1 -p 4173 -c-1\"",
+    "start": "concurrently -k -n backend,frontend \"npm:backend\" \"npm:frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jordan77-lang/water-allocation.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jordan77-lang/water-allocation/issues"
+  },
+  "homepage": "https://github.com/jordan77-lang/water-allocation#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
+    "http-server": "^14.1.1"
+  }
+}
