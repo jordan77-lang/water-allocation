@@ -3,57 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <title>Water Allocation Simulation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Water Allocation Choices</h1>
-  <div class="bars">
-    <div class="bar-col">
-      <div class="bar" id="food"><span>Food</span></div>
-      <div class="bar-caption">Food</div>
+  <div class="app-container">
+    <header>
+      <h1>Water Allocation Choices</h1>
+      <p class="subtitle">A simulation of community resource management</p>
+    </header>
+    
+    <div class="bars-container glass">
+      <div class="bars">
+        <div class="bar-col">
+          <div class="bar" id="food"><span>Food</span></div>
+          <div class="bar-caption">Food</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar" id="ai"><span>AI</span></div>
+          <div class="bar-caption">AI</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar" id="crops"><span>Crops</span></div>
+          <div class="bar-caption">Crops</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar" id="animals"><span>Animals</span></div>
+          <div class="bar-caption">Animals</div>
+        </div>
+      </div>
     </div>
-    <div class="bar-col">
-      <div class="bar" id="ai"><span>AI</span></div>
-      <div class="bar-caption">AI</div>
-    </div>
-    <div class="bar-col">
-      <div class="bar" id="crops"><span>Crops</span></div>
-      <div class="bar-caption">Crops</div>
-    </div>
-    <div class="bar-col">
-      <div class="bar" id="animals"><span>Animals</span></div>
-      <div class="bar-caption">Animals</div>
-    </div>
-  </div>
 
-  <div class="story-area visible" id="story-area">
-    <h2 id="story-heading">Awaiting your first offering of water...</h2>
-    <p id="story-body">Each bucket reflects a choice Diné communities face every season. Add water to begin the story.</p>
-  </div>
+    <div class="story-area glass visible" id="story-area">
+      <h2 id="story-heading">Awaiting your first offering of water...</h2>
+      <p id="story-body">Each bucket reflects a choice Diné communities face every season. Add water to begin the story.</p>
+    </div>
 
-  <div class="controls">
-    <div class="control-row" data-bucket="food">
-      <h3>Food</h3>
-      <button class="bag-button small" data-bucket="food" data-size="small">Small Bean Bag</button>
-      <button class="bag-button large" data-bucket="food" data-size="large">Large Bean Bag</button>
-    </div>
-    <div class="control-row" data-bucket="ai">
-      <h3>AI</h3>
-      <button class="bag-button small" data-bucket="ai" data-size="small">Small Bean Bag</button>
-      <button class="bag-button large" data-bucket="ai" data-size="large">Large Bean Bag</button>
-    </div>
-    <div class="control-row" data-bucket="crops">
-      <h3>Crops</h3>
-      <button class="bag-button small" data-bucket="crops" data-size="small">Small Bean Bag</button>
-      <button class="bag-button large" data-bucket="crops" data-size="large">Large Bean Bag</button>
-    </div>
-    <div class="control-row" data-bucket="animals">
-      <h3>Animals</h3>
-      <button class="bag-button small" data-bucket="animals" data-size="small">Small Bean Bag</button>
-      <button class="bag-button large" data-bucket="animals" data-size="large">Large Bean Bag</button>
-    </div>
-    <div class="controls-note">
-      <small>Use these buttons to simulate bean bags (page enters test mode until refresh).</small>
+    <div class="controls glass">
+      <div class="control-row" data-bucket="food">
+        <h3>Food</h3>
+        <button class="bag-button small" data-bucket="food" data-size="small">Small</button>
+        <button class="bag-button large" data-bucket="food" data-size="large">Large</button>
+      </div>
+      <div class="control-row" data-bucket="ai">
+        <h3>AI</h3>
+        <button class="bag-button small" data-bucket="ai" data-size="small">Small</button>
+        <button class="bag-button large" data-bucket="ai" data-size="large">Large</button>
+      </div>
+      <div class="control-row" data-bucket="crops">
+        <h3>Crops</h3>
+        <button class="bag-button small" data-bucket="crops" data-size="small">Small</button>
+        <button class="bag-button large" data-bucket="crops" data-size="large">Large</button>
+      </div>
+      <div class="control-row" data-bucket="animals">
+        <h3>Animals</h3>
+        <button class="bag-button small" data-bucket="animals" data-size="small">Small</button>
+        <button class="bag-button large" data-bucket="animals" data-size="large">Large</button>
+      </div>
+      <div class="controls-note">
+        <small>Use these buttons to simulate bean bags (page enters test mode until refresh).</small>
+      </div>
     </div>
   </div>
   <script src="script.js"></script>

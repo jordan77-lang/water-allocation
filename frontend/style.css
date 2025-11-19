@@ -1,103 +1,149 @@
+:root {
+  /* Color Palette - Deep Ocean & Sand */
+  --bg-gradient-start: #0f172a;
+  --bg-gradient-mid: #1e293b;
+  --bg-gradient-end: #334155;
 
-.bar .fill .bubble {
-  position: absolute;
-  bottom: 0;
-  width: 12px;
-  height: 12px;
-  background: rgba(255,255,255,0.5);
-  border-radius: 50%;
-  animation: bubble 2.5s infinite ease-in-out;
-}
-.bar .fill .bubble:nth-child(1) { left: 15%; animation-delay: 0s; }
-.bar .fill .bubble:nth-child(2) { left: 40%; animation-delay: 0.7s; }
-.bar .fill .bubble:nth-child(3) { left: 70%; animation-delay: 1.3s; }
-.bar .fill .bubble:nth-child(4) { left: 55%; animation-delay: 1.8s; }
-.bar .fill .bubble:nth-child(5) { left: 30%; animation-delay: 2.2s; }
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 
-@keyframes bubble {
-  0% { transform: translateY(0) scale(1); opacity: 0.7; }
-  50% { transform: translateY(-40px) scale(1.2); opacity: 1; }
-  100% { transform: translateY(-80px) scale(0.8); opacity: 0; }
-}
-.bar .fill .bubble {
-  /* ...existing bubble styles... */
-  animation-duration: 4s;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --accent-gold: #fcd34d;
+  --accent-teal: #2dd4bf;
+
+  --bar-bg: rgba(255, 255, 255, 0.1);
+  --water-gradient: linear-gradient(180deg, #67e8f9 0%, #0ea5e9 100%);
+
+  /* Typography */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
 }
 
-.bar .fill .reflection {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 100%);
-  border-radius: 0 0 16px 16px;
-  pointer-events: none;
+* {
+  box-sizing: border-box;
 }
+
 body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  text-align: center;
-  background: linear-gradient(160deg, #0d1b2a 0%, #1b263b 35%, #415a77 65%, #e0d9b5 100%);
-  color: #f5f5f5;
+  font-family: var(--font-body);
+  background: radial-gradient(circle at top left, #1e293b, #0f172a);
+  color: var(--text-primary);
   min-height: 100vh;
   margin: 0;
-}
-
-
- .bars {
-  display: flex;
-  justify-content: center;
-  gap: 70px;
-  margin-top: 60px;
-  margin-bottom: 30px;
-}
-  
-
-/* Bar column for label alignment */
- .bar-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 120px;
-}
-  
-  .bar-caption {
-    margin-top: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: #f1f4f9;
-    text-transform: uppercase;
-  }
-
-
-.bar {
-  width: 140px;
-  height: 300px;
-  background: rgba(240, 244, 247, 0.8);
-  position: relative;
-  border-radius: 20px 20px 16px 16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-  overflow: hidden;
-  margin-bottom: 10px;
-  transition: box-shadow 0.3s;
-}
-.bar:hover {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  overflow-x: hidden;
 }
 
- .bar span {
-  position: absolute;
-  bottom: -34px;
+/* Background Texture */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  text-align: center;
-  font-weight: bold;
-  font-size: 1.15em;
-  color: #f3f4f6;
-  letter-spacing: 1px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: -1;
 }
-  
 
+.app-container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-family: var(--font-heading);
+  font-size: 3.5rem;
+  font-weight: 600;
+  margin: 0;
+  background: linear-gradient(to right, #f8fafc, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+}
+
+/* Glassmorphism Utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 24px;
+}
+
+/* Bars Container */
+.bars-container {
+  padding: 3rem 2rem;
+}
+
+.bars {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bar-caption {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+}
+
+/* Bar Container */
+.bar {
+  width: 120px;
+  height: 320px;
+  background: var(--bar-bg);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  /* Keeps everything inside the glass container */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.bar span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  z-index: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
 
 .bar .fill {
   position: absolute;
@@ -105,25 +151,139 @@ body {
   left: 0;
   width: 100%;
   height: 0%;
-  transition: height 0.5s;
-  border-radius: 0 0 16px 16px;
-  background: linear-gradient(180deg, #b3e5fc 0%, #0288d1 100%);
-  box-shadow: 0 2px 8px rgba(33,150,243,0.15);
-  overflow: hidden;
+  background: var(--water-gradient);
+  transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 20px rgba(103, 232, 249, 0.4);
+  /* Allow the wave to stick out the top, but the .bar container will clip it if it goes too high */
+  overflow: visible;
 }
 
+/* Wave Effect */
+.bar .fill::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: -50%;
+  width: 200%;
+  height: 24px;
+  background: rgba(103, 232, 249, 0.3);
+  border-radius: 40%;
+  animation: wave 4s linear infinite;
+  z-index: 0;
+}
+
+.bar .fill::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: -50%;
+  width: 200%;
+  height: 12px;
+  background: #67e8f9;
+  /* Match the top of the gradient */
+  border-radius: 40%;
+  animation: wave 6s linear infinite reverse;
+  z-index: 1;
+}
+
+@keyframes wave {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateX(-25%) rotate(2deg);
+  }
+
+  100% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+}
+
+/* Bubbles */
+.bar .fill .bubble {
+  position: absolute;
+  bottom: -20px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  animation: rise 4s infinite ease-in;
+  z-index: 2;
+  /* Above the wave background but below the top wave crest if possible */
+}
+
+.bar .fill .bubble:nth-child(1) {
+  width: 8px;
+  height: 8px;
+  left: 10%;
+  animation-duration: 3s;
+  animation-delay: 0s;
+}
+
+.bar .fill .bubble:nth-child(2) {
+  width: 12px;
+  height: 12px;
+  left: 30%;
+  animation-duration: 4.5s;
+  animation-delay: 0.5s;
+}
+
+.bar .fill .bubble:nth-child(3) {
+  width: 6px;
+  height: 6px;
+  left: 60%;
+  animation-duration: 2.8s;
+  animation-delay: 1.2s;
+}
+
+.bar .fill .bubble:nth-child(4) {
+  width: 10px;
+  height: 10px;
+  left: 80%;
+  animation-duration: 3.8s;
+  animation-delay: 2s;
+}
+
+.bar .fill .bubble:nth-child(5) {
+  width: 7px;
+  height: 7px;
+  left: 45%;
+  animation-duration: 3.2s;
+  animation-delay: 2.5s;
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.8;
+  }
+
+  /* Fade out before reaching the very top so they don't clip weirdly at the wave line */
+  80% {
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translateY(-250px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Story Area */
 .story-area {
-  max-width: 800px;
-  margin: 40px auto 30px;
-  padding: 24px 30px;
-  background: rgba(12, 32, 52, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 18px;
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
-  text-align: left;
+  padding: 2rem;
+  text-align: center;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.5s ease;
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(20px);
 }
 
 .story-area.visible {
@@ -132,75 +292,80 @@ body {
 }
 
 #story-heading {
-  margin: 0 0 10px;
-  font-size: 1.5em;
-  color: #fefae0;
-  letter-spacing: 0.5px;
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  color: var(--accent-gold);
+  margin: 0 0 0.5rem 0;
 }
 
 #story-body {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 800px;
   margin: 0;
-  font-size: 1.06em;
-  line-height: 1.55;
-  color: #f1f5f9;
 }
 
+/* Controls */
 .controls {
-  margin: 60px auto 50px;
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: 2rem;
+  padding: 2rem;
   flex-wrap: wrap;
-  max-width: 900px;
 }
 
 .control-row {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255,255,255,0.08);
-  border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-  padding: 16px 24px;
-  min-width: 150px;
-  backdrop-filter: blur(4px);
+  gap: 0.8rem;
+  min-width: 140px;
 }
 
 .control-row h3 {
-  margin: 0 0 12px;
-  font-size: 1.1em;
-  letter-spacing: 1px;
-  color: #f2f4f8;
-  text-transform: uppercase;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--text-primary);
 }
 
 .bag-button {
-  font-family: inherit;
-  font-size: 0.95em;
-  padding: 10px 18px;
-  margin: 4px 0;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  color: #0d1b2a;
-  font-weight: 600;
   width: 100%;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .bag-button.small {
-  background: linear-gradient(135deg, #b3e5fc 0%, #4fc3f7 100%);
-  box-shadow: 0 4px 12px rgba(79,195,247,0.35);
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--accent-teal);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+}
+
+.bag-button.small:hover {
+  background: rgba(45, 212, 191, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(45, 212, 191, 0.2);
 }
 
 .bag-button.large {
-  background: linear-gradient(135deg, #ffd166 0%, #f4a259 100%);
-  box-shadow: 0 4px 12px rgba(244,162,89,0.35);
+  background: rgba(252, 211, 77, 0.1);
+  color: var(--accent-gold);
+  border: 1px solid rgba(252, 211, 77, 0.3);
 }
 
-.bag-button:hover {
+.bag-button.large:hover {
+  background: rgba(252, 211, 77, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.28);
+  box-shadow: 0 4px 12px rgba(252, 211, 77, 0.2);
 }
 
 .bag-button:active {
@@ -208,9 +373,8 @@ body {
 }
 
 .controls-note {
-  flex-basis: 100%;
+  width: 100%;
   text-align: center;
-  margin-top: 20px;
-  color: rgba(241,245,249,0.8);
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.3);
 }
-
