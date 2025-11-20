@@ -20,7 +20,7 @@ logger = logging.getLogger("water-allocation")
 
 # === Hardware configuration ===
 # Override these via env vars when deploying on another machine, e.g. WATER_SERIAL_PORT=COM5.
-SERIAL_PORT = os.getenv("WATER_SERIAL_PORT", "COM3")
+SERIAL_PORT = os.getenv("WATER_SERIAL_PORT", "COM6")
 BAUD_RATE = int(os.getenv("WATER_SERIAL_BAUD", "9600"))
 SERIAL_RETRY_SECONDS = float(os.getenv("WATER_SERIAL_RETRY_SECONDS", "5"))
 
@@ -50,11 +50,17 @@ HEAVY_BAG_INCREMENT = float(os.getenv("WATER_HEAVY_INCREMENT", "25"))
 DECAY_POINTS_PER_SECOND = float(os.getenv("WATER_DECAY_PER_SEC", "0.005"))
 
 
+# 4) Debounce. Time in seconds to ignore new bags after a drop is detected.
+#    This prevents the "shock" or bounce of a bag from registering as a second drop.
+BAG_DEBOUNCE_SECONDS = float(os.getenv("WATER_BAG_DEBOUNCE_SECONDS", "0.5"))
+
+
 @dataclass
 class BucketState:
     water_points: float = 0.0
     last_raw_reading: float = 0.0
     last_decay_timestamp: float = field(default_factory=time.time)
+    last_trigger_timestamp: float = 0.0
 
 
 bucket_state: Dict[str, BucketState] = {
@@ -63,48 +69,98 @@ bucket_state: Dict[str, BucketState] = {
 
 latest_raw_values: Dict[str, float] = {bucket: 0.0 for bucket in BUCKET_ORDER}
 
+last_serial_error = None
 ser: Optional[serial.Serial] = None
 
 app = Flask(__name__)
 CORS(app)
 
 
+import serial.tools.list_ports
+
+# List ports on startup to help user debug
+print("--- Available COM Ports ---")
+for p in serial.tools.list_ports.comports():
+    print(f"  {p.device}: {p.description}")
+print("---------------------------")
+
+
 def _get_serial() -> Optional[serial.Serial]:
-    global ser
+    global ser, last_serial_error
     if ser and ser.is_open:
         return ser
     try:
+        print(f"Attempting to connect to {SERIAL_PORT}...")
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+        # DTR/RTS dance to ensure reset or stable connection
+        ser.dtr = False
+        time.sleep(0.1)
+        ser.dtr = True
+        ser.reset_input_buffer()
+        
+        last_serial_error = None
         logger.info("Connected to %s at %s baud", SERIAL_PORT, BAUD_RATE)
     except serial.SerialException as exc:
-        logger.warning("Unable to open serial port %s: %s", SERIAL_PORT, exc)
+        last_serial_error = str(exc)
+        if "Access is denied" in str(exc):
+            logger.error("!!! PORT BUSY !!!")
+            logger.error("Please CLOSE the Arduino Serial Monitor or any other app using %s.", SERIAL_PORT)
+        else:
+            logger.warning("Unable to open serial port %s: %s", SERIAL_PORT, exc)
         ser = None
     return ser
 
 
 def _parse_serial_line() -> Optional[List[float]]:
-    """Read a CSV line from the Arduino and return four floats."""
+    """Read the LATEST line from the Arduino (drain buffer)."""
     connection = _get_serial()
     if connection is None:
         return None
+    
+    last_valid_line = None
+    
     try:
-        line = connection.readline().decode("utf-8").strip()
+        # Read all waiting lines to get the freshest data
+        while connection.in_waiting > 0:
+            line_bytes = connection.readline()
+            try:
+                line = line_bytes.decode("utf-8").strip()
+                if line and not line.startswith("#"):
+                    last_valid_line = line
+                elif line.startswith("#"):
+                    print(f"[ARDUINO LOG] {line}")
+            except UnicodeDecodeError:
+                continue # Ignore garbage bytes
+                
+        # If buffer was empty, try a blocking read for one line
+        if last_valid_line is None:
+            line = connection.readline().decode("utf-8").strip()
+            if line and not line.startswith("#"):
+                last_valid_line = line
+            elif line.startswith("#"):
+                print(f"[ARDUINO LOG] {line}")
+
     except serial.SerialException as exc:
         logger.warning("Serial read failed: %s", exc)
         time.sleep(SERIAL_RETRY_SECONDS)
         return None
-
-    if not line or line.startswith("#"):
+    except Exception as e:
+        logger.error(f"Error reading serial: {e}")
         return None
 
-    parts = line.split(",")
+    if not last_valid_line:
+        return None
+
+    print(f"[RAW] {last_valid_line}")
+
+    parts = last_valid_line.split(",")
     if len(parts) != len(BUCKET_ORDER):
-        logger.debug("Malformed payload: %s", line)
+        logger.debug("Malformed payload: %s", last_valid_line)
         return None
     try:
         return [float(part) for part in parts]
     except ValueError:
-        logger.debug("Non-numeric payload: %s", line)
+        logger.debug("Non-numeric payload: %s", last_valid_line)
         return None
 
 
@@ -129,12 +185,21 @@ def _ingest_raw_readings(raw_values: Optional[List[float]]) -> Dict[str, float]:
             latest_raw_values[bucket] = raw
             delta = raw - state.last_raw_reading
 
-            if delta >= HEAVY_BAG_THRESHOLD:
-                state.water_points += HEAVY_BAG_INCREMENT
-                logger.info("Detected heavy bag on %s (delta %.2f)", bucket, delta)
-            elif delta >= LIGHT_BAG_THRESHOLD:
-                state.water_points += LIGHT_BAG_INCREMENT
-                logger.info("Detected light bag on %s (delta %.2f)", bucket, delta)
+            # Check debounce to prevent double-counting shock/bounces
+            if delta >= LIGHT_BAG_THRESHOLD:
+                if now - state.last_trigger_timestamp > BAG_DEBOUNCE_SECONDS:
+                    if delta >= HEAVY_BAG_THRESHOLD:
+                        state.water_points += HEAVY_BAG_INCREMENT
+                        state.last_trigger_timestamp = now
+                        logger.info("Detected heavy bag on %s (delta %.2f)", bucket, delta)
+                    else:
+                        state.water_points += LIGHT_BAG_INCREMENT
+                        state.last_trigger_timestamp = now
+                        logger.info("Detected light bag on %s (delta %.2f)", bucket, delta)
+                else:
+                    logger.info("Ignored drop on %s (debounce active, delta %.2f)", bucket, delta)
+            elif delta > 50: # Log significant movements that are below threshold
+                 logger.debug("Ignored small movement on %s (delta %.2f < threshold)", bucket, delta)
 
             state.last_raw_reading = raw
 
@@ -147,7 +212,19 @@ def _ingest_raw_readings(raw_values: Optional[List[float]]) -> Dict[str, float]:
 def get_data():
     raw_values = _parse_serial_line()
     totals = _ingest_raw_readings(raw_values)
-    return jsonify(totals)
+    
+    status = "ok"
+    if ser is None:
+        status = "disconnected"
+    elif raw_values is None:
+        status = "no_data"
+
+    return jsonify({
+        "totals": totals, 
+        "raw": raw_values if raw_values else [],
+        "status": status,
+        "error": last_serial_error
+    })
 
 
 @app.route("/debug/raw")
@@ -163,6 +240,15 @@ def debug_raw():
         "heavy_threshold": HEAVY_BAG_THRESHOLD,
     }
     return jsonify(payload)
+
+
+@app.route("/reset", methods=["POST"])
+def reset_state():
+    """Reset all bucket water levels to zero."""
+    global bucket_state
+    bucket_state = {bucket: BucketState() for bucket in BUCKET_ORDER}
+    logger.info("State reset triggered by client.")
+    return jsonify({"status": "reset"})
 
 
 @app.route("/config")

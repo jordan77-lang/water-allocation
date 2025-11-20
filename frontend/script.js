@@ -1,10 +1,17 @@
 // Preload sounds
-const sounds = {
-  food: new Audio("../sounds/food.mp3"),
-  ai: new Audio("../sounds/ai.mp3"),
-  crops: new Audio("../sounds/crops.mp3"),
-  animals: new Audio("../sounds/animals.mp3")
+// Sound Manifest: Add more filenames here to play them randomly!
+const soundManifest = {
+  food: ["food.mp3"],
+  ai: ["ai.mp3"],
+  crops: ["crops.mp3"],
+  animals: ["animals.mp3"]
 };
+
+// Preload all sounds
+const soundBank = {};
+for (const [key, files] of Object.entries(soundManifest)) {
+  soundBank[key] = files.map(file => new Audio(`../sounds/${file}`));
+}
 
 // === Water animation tuning ===
 const SOUND_THRESHOLD = 5; // minimum water-point jump to count as a bag event; keep slightly below the light bag increment from the backend
@@ -22,8 +29,8 @@ let MIN_DECAY_STEP = 0.1; // smallest amount of water to remove each step so the
 const DECAY_INTERVAL_MS = 2000; // how often the front-end water levels should decay (ms)
 const MAX_WATER_POINTS = 200; // keep in sync with the backend: raise if the scene should allow more stored water
 
-let lastValues = {food:0, ai:0, crops:0, animals:0};
-const displayValues = {food:0, ai:0, crops:0, animals:0};
+let lastValues = { food: 0, ai: 0, crops: 0, animals: 0 };
+const displayValues = { food: 0, ai: 0, crops: 0, animals: 0 };
 
 let testMode = false;
 const bagButtons = document.querySelectorAll('.bag-button');
@@ -31,7 +38,7 @@ const bagButtons = document.querySelectorAll('.bag-button');
 const storyArea = document.getElementById('story-area');
 const storyHeading = document.getElementById('story-heading');
 const storyBody = document.getElementById('story-body');
-const bucketTitles = {food: 'Food', ai: 'AI', crops: 'Crops', animals: 'Animals'};
+const bucketTitles = { food: 'Food', ai: 'AI', crops: 'Crops', animals: 'Animals' };
 
 const stories = {
   food: [
@@ -60,7 +67,7 @@ const stories = {
   ]
 };
 
-const lastStoryIndex = {food:null, ai:null, crops:null, animals:null};
+const lastStoryIndex = { food: null, ai: null, crops: null, animals: null };
 let storyTimeout = null;
 
 bagButtons.forEach((button) => {
@@ -88,10 +95,15 @@ function getFillElement(key) {
     fill = document.createElement('div');
     fill.className = 'fill';
     bar.appendChild(fill);
+
+    const bubblesContainer = document.createElement('div');
+    bubblesContainer.className = 'bubbles-container';
+    fill.appendChild(bubblesContainer);
+
     for (let i = 0; i < 5; i++) {
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
-      fill.appendChild(bubble);
+      bubblesContainer.appendChild(bubble);
     }
   }
   return fill;
@@ -120,9 +132,27 @@ function updateBar(key, value, options = {}) {
   const previousTarget = lastValues[key] || 0;
   const diff = value - previousTarget;
   if (diff >= SOUND_THRESHOLD) {
-    sounds[key].currentTime = 0;
-    sounds[key].play();
+    const options = soundBank[key];
+    if (options && options.length > 0) {
+      const randomSound = options[Math.floor(Math.random() * options.length)];
+      randomSound.currentTime = 0;
+      randomSound.play().catch(e => console.warn("Audio play failed:", e));
+    }
     showStory(key);
+
+    // Visual Polish: Splash & Pulse
+    const bar = document.getElementById(key);
+    if (bar) {
+      // 1. Trigger Pulse
+      bar.classList.remove('pulse');
+      void bar.offsetWidth; // trigger reflow
+      bar.classList.add('pulse');
+
+      // 2. Create Splash Particles
+      // Calculate current height percent for positioning
+      const percent = Math.min((displayValues[key] / MAX_WATER_POINTS) * 100, 100);
+      createSplash(bar, percent);
+    }
   }
 
   const newTarget = Object.prototype.hasOwnProperty.call(options, 'targetValue')
@@ -170,14 +200,16 @@ function showStory(key) {
 async function fetchData() {
   if (!testMode) {
     const response = await fetch("http://localhost:5000/data");
-    const data = await response.json();
+    const json = await response.json();
+    // Handle both old flat format and new nested format
+    const data = json.totals || json;
     for (let key in data) {
       updateBar(key, data[key]);
     }
   }
 }
 
-setInterval(fetchData, 1000);
+setInterval(fetchData, 100);
 
 async function syncDecaySettings() {
   try {
@@ -197,3 +229,37 @@ async function syncDecaySettings() {
 }
 
 syncDecaySettings();
+
+// Reset backend state on page load so bars start at zero
+fetch("http://localhost:5000/reset", { method: "POST" }).catch(err => console.error("Failed to reset state:", err));
+
+function createSplash(barElement, fillPercent) {
+  const particleCount = 12;
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement('div');
+    particle.classList.add('splash-particle');
+
+    // Random destination: explode outward and upward
+    const tx = (Math.random() - 0.5) * 100; // -50px to 50px horizontal
+    const ty = -Math.random() * 100 - 20;   // -20px to -120px vertical (up)
+
+    particle.style.setProperty('--tx', `${tx}px`);
+    particle.style.setProperty('--ty', `${ty}px`);
+
+    // Start position: center horizontally, and at the current water level vertically
+    particle.style.left = '50%';
+    particle.style.bottom = `${fillPercent}%`;
+
+    // Random color variation (white to light blue)
+    if (Math.random() > 0.5) {
+      particle.style.background = '#67e8f9';
+    }
+
+    barElement.appendChild(particle);
+
+    // Cleanup after animation
+    setTimeout(() => {
+      particle.remove();
+    }, 600);
+  }
+}
