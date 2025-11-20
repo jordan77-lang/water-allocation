@@ -152,12 +152,24 @@ def _parse_serial_line() -> Optional[List[float]]:
         if not last_valid_line:
             return None
 
+        # Reject obviously invalid data early
+        if len(last_valid_line) > 100 or len(last_valid_line) < 3:
+            logger.debug("Line too long or too short: %s", last_valid_line)
+            return None
+
         print(f"[RAW] {last_valid_line}")
 
         parts = last_valid_line.split(",")
         if len(parts) != len(BUCKET_ORDER):
             logger.debug("Malformed payload: %s", last_valid_line)
             return None
+        
+        # Validate each part is actually a number before converting
+        for part in parts:
+            if not part.replace('-', '').replace('.', '').replace(' ', '').isdigit():
+                logger.debug("Non-numeric part in payload: %s", last_valid_line)
+                return None
+        
         try:
             return [float(part) for part in parts]
         except ValueError:
