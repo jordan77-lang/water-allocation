@@ -15,10 +15,10 @@ constexpr unsigned long READ_INTERVAL_MS = 100; // Lower for faster updates, rai
 
 ScaleChannel channels[NUM_CHANNELS] = {
   // Replace the placeholder calibration factors with the value produced by scale.get_units() / known_mass.
-  {HX711(), 2, 3, 7050.0f, 0},   // Food bucket
-  {HX711(), 4, 5, 7050.0f, 0},   // AI bucket
-  {HX711(), 6, 7, 7050.0f, 0},   // Crops bucket
-  {HX711(), 8, 9, 7050.0f, 0}    // Animals bucket
+  {HX711(), 2, 3, 7050.0f, 0},   // Food bucket 1
+  {HX711(), 4, 5, 7050.0f, 0},   // AI bucket 2
+  {HX711(), 6, 7, 7050.0f, 0},   // Crops bucket 3
+  {HX711(), 8, 9, 7050.0f, 0}    // Animals bucket 4
 };
 
 unsigned long lastReadMillis = 0;

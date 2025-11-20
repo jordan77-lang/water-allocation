@@ -6,7 +6,7 @@
   "scripts": {
     "backend": "dotenv -e .env -- ..\\\\.venv\\\\Scripts\\\\python.exe backend\\server.py",
     "frontend": "cross-env-shell \"http-server frontend -a 127.0.0.1 -p 4173 -c-1\"",
-    "start": "concurrently -k -n backend,frontend \"npm:backend\" \"npm:frontend\""
+    "start": "concurrently --restart-tries 0 --restart-after 2000 -n backend,frontend \"npm:backend\" \"npm:frontend\""
   },
   "repository": {
     "type": "git",

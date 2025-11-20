@@ -111,6 +111,23 @@ def _get_serial() -> Optional[serial.Serial]:
     return ser
 
 
+def _close_serial(reason: str = "") -> None:
+    """Safely close the serial port so it can be reopened."""
+    global ser
+    if ser is None:
+        return
+    try:
+        ser.close()
+    except serial.SerialException:
+        pass
+    finally:
+        ser = None
+    if reason:
+        logger.warning("Serial port closed (%s)", reason)
+    else:
+        logger.warning("Serial port closed")
+
+
 def _parse_serial_line() -> Optional[List[float]]:
     """Read the LATEST line from the Arduino (drain buffer)."""
     try:
@@ -143,10 +160,13 @@ def _parse_serial_line() -> Optional[List[float]]:
 
         except serial.SerialException as exc:
             logger.warning("Serial read failed: %s", exc)
+            _close_serial("read error")
             time.sleep(SERIAL_RETRY_SECONDS)
             return None
         except Exception as e:
-            logger.error(f"Error reading serial: {e}")
+            logger.error("Error reading serial: %s", e, exc_info=True)
+            _close_serial("unexpected read error")
+            time.sleep(SERIAL_RETRY_SECONDS)
             return None
 
         if not last_valid_line:
@@ -176,7 +196,9 @@ def _parse_serial_line() -> Optional[List[float]]:
             logger.debug("Non-numeric payload: %s", last_valid_line)
             return None
     except Exception as e:
-        logger.error(f"Critical error in _parse_serial_line: {e}")
+        logger.error("Critical error in _parse_serial_line: %s", e, exc_info=True)
+        _close_serial("critical read error")
+        time.sleep(SERIAL_RETRY_SECONDS)
         return None
 
 
