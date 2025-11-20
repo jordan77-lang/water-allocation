@@ -10,8 +10,37 @@ const soundManifest = {
 // Preload all sounds
 const soundBank = {};
 for (const [key, files] of Object.entries(soundManifest)) {
-  soundBank[key] = files.map(file => new Audio(`../sounds/${file}`));
+  soundBank[key] = files.map(file => {
+    const audio = new Audio(`./sounds/${file}`);
+    // Prevent errors from crashing the app if audio files are missing
+    audio.addEventListener('error', (e) => {
+      console.warn(`Audio file not found: ${file}. Please add MP3 files to the sounds folder.`);
+    });
+    return audio;
+  });
 }
+
+// === Audio unlock on first interaction ===
+// This allows audio to play after user clicks anywhere, without entering test mode
+let audioUnlocked = false;
+document.addEventListener('click', function unlockAudio() {
+  if (!audioUnlocked) {
+    // Play and immediately pause a silent sound to unlock audio context
+    for (const sounds of Object.values(soundBank)) {
+      if (sounds.length > 0) {
+        const testSound = sounds[0];
+        testSound.volume = 0;
+        testSound.play().then(() => {
+          testSound.pause();
+          testSound.volume = 1;
+        }).catch(() => { });
+        break;
+      }
+    }
+    audioUnlocked = true;
+  }
+}, { once: true });
+
 
 // === Water animation tuning ===
 const SOUND_THRESHOLD = 5; // minimum water-point jump to count as a bag event; keep slightly below the light bag increment from the backend

@@ -113,54 +113,58 @@ def _get_serial() -> Optional[serial.Serial]:
 
 def _parse_serial_line() -> Optional[List[float]]:
     """Read the LATEST line from the Arduino (drain buffer)."""
-    connection = _get_serial()
-    if connection is None:
-        return None
-    
-    last_valid_line = None
-    
     try:
-        # Read all waiting lines to get the freshest data
-        while connection.in_waiting > 0:
-            line_bytes = connection.readline()
-            try:
-                line = line_bytes.decode("utf-8").strip()
+        connection = _get_serial()
+        if connection is None:
+            return None
+        
+        last_valid_line = None
+        
+        try:
+            # Read all waiting lines to get the freshest data
+            while connection.in_waiting > 0:
+                line_bytes = connection.readline()
+                try:
+                    line = line_bytes.decode("utf-8").strip()
+                    if line and not line.startswith("#"):
+                        last_valid_line = line
+                    elif line.startswith("#"):
+                        print(f"[ARDUINO LOG] {line}")
+                except UnicodeDecodeError:
+                    continue # Ignore garbage bytes
+                    
+            # If buffer was empty, try a blocking read for one line
+            if last_valid_line is None:
+                line = connection.readline().decode("utf-8").strip()
                 if line and not line.startswith("#"):
                     last_valid_line = line
                 elif line.startswith("#"):
                     print(f"[ARDUINO LOG] {line}")
-            except UnicodeDecodeError:
-                continue # Ignore garbage bytes
-                
-        # If buffer was empty, try a blocking read for one line
-        if last_valid_line is None:
-            line = connection.readline().decode("utf-8").strip()
-            if line and not line.startswith("#"):
-                last_valid_line = line
-            elif line.startswith("#"):
-                print(f"[ARDUINO LOG] {line}")
 
-    except serial.SerialException as exc:
-        logger.warning("Serial read failed: %s", exc)
-        time.sleep(SERIAL_RETRY_SECONDS)
-        return None
+        except serial.SerialException as exc:
+            logger.warning("Serial read failed: %s", exc)
+            time.sleep(SERIAL_RETRY_SECONDS)
+            return None
+        except Exception as e:
+            logger.error(f"Error reading serial: {e}")
+            return None
+
+        if not last_valid_line:
+            return None
+
+        print(f"[RAW] {last_valid_line}")
+
+        parts = last_valid_line.split(",")
+        if len(parts) != len(BUCKET_ORDER):
+            logger.debug("Malformed payload: %s", last_valid_line)
+            return None
+        try:
+            return [float(part) for part in parts]
+        except ValueError:
+            logger.debug("Non-numeric payload: %s", last_valid_line)
+            return None
     except Exception as e:
-        logger.error(f"Error reading serial: {e}")
-        return None
-
-    if not last_valid_line:
-        return None
-
-    print(f"[RAW] {last_valid_line}")
-
-    parts = last_valid_line.split(",")
-    if len(parts) != len(BUCKET_ORDER):
-        logger.debug("Malformed payload: %s", last_valid_line)
-        return None
-    try:
-        return [float(part) for part in parts]
-    except ValueError:
-        logger.debug("Non-numeric payload: %s", last_valid_line)
+        logger.error(f"Critical error in _parse_serial_line: {e}")
         return None
 
 

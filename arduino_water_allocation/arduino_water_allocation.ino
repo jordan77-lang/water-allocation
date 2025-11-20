@@ -4,6 +4,7 @@ struct ScaleChannel {
   HX711 scale;
   const uint8_t doutPin;
   const uint8_t sckPin;
+
   float calibrationFactor;  // Counts-per-gram derived from a known weight; negative flips direction
   long tareOffset;          // Saved offset from a prior tare; leave as 0 to tare automatically at boot
 };
